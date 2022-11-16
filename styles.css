@@ -1,0 +1,147 @@
+body{
+    padding: 100px;
+    background-color: #281e1e;
+    color: #ddd;
+}
+
+#form{
+    margin: 10px;
+    border: 2px solid #ad6962;
+    border-radius: 10px;
+    font-size: 1.4rem;
+    color: #ddd;
+    width: 70%;
+}
+
+#form label{
+    margin: 10px;
+    font-weight: bold;
+}
+#form input, #form select{
+    border-radius: 10px;
+    border: 0;
+    border-bottom: 1px solid #a1d9b6;
+    height: 40px;
+    /*width: 90%;*/
+    font-size: 1.4rem;
+    padding: 10px;
+}
+#form select{
+    height: 55px;
+}
+.form-wrapper{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#form>div{
+    display: flex;
+    flex-direction: column;
+    margin: 10px;
+}
+
+.medical-list{
+    margin: 10px;
+    border: 2px solid #a66ed9;
+    border-radius: 10px;
+}
+
+.action-buttons button{
+    font-size: 1.6rem;
+    font-weight: bold;
+    height: 90px;
+    width: 120px;
+    background-color: #9ce57e;
+    border-radius: 10px;
+    color: aliceblue;
+}
+.action-buttons .active{
+    background-color: #3a9315;
+}
+.action-buttons button:hover, .action-buttons button:focus{
+    background-color: #3a9315;
+}
+.addButton{
+    height: 50px;
+    width: calc(100% - 20px);
+    background-color: #9ce57e;
+    border-radius: 10px;
+    margin: 10px;
+    font-size: 1.4rem;
+}
+.addButton:hover{
+    background-color: #3a9315;
+}
+
+.medical-list{
+    margin: 10px;
+    width: 90%;
+}
+.medical-list .list-item{
+    margin: 10px;
+    outline: #a66ed9;
+    border-bottom: 2px solid #ddd;
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+}
+.list-item span{
+    padding: 10px;
+}
+.list-item .label {
+    color: #b1c2d0;
+    font-weight: bold;
+}
+#errors{
+    width: 100%;
+    margin:10px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    font-size: 1.2rem;
+    color: red;
+}
+.error-list-item{
+    margin:10px 0;
+}
+#search{
+    margin:20px 10px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    height: 40px;
+    width: 500px;
+    padding: 10px;
+    font-size: 1.4rem;
+}
+.links{
+    margin-left: auto;
+}
+.noData{
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ddd;
+}
+
+.links button{
+    height: 50px;
+    background-color: #4899b2;
+    border-radius: 10px;
+    border: 2px solid #ddd;
+    margin: 10px;
+    font-size: 1.4rem;
+}
+.links button:hover{
+    background-color: #075a73;
+}
+.flex{
+    display: flex;
+    flex-wrap: wrap;
+}
+.flex-column{
+    display: flex;
+    flex-direction: column;
+}
