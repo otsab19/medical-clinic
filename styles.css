@@ -25,6 +25,7 @@ body{
     /*width: 90%;*/
     font-size: 1.4rem;
     padding: 10px;
+    background-color: #dcf5f5;
 }
 #form select{
     height: 55px;
@@ -117,7 +118,7 @@ body{
 .links{
     margin-left: auto;
 }
-.noData{
+#noData{
     display: flex;
     justify-content: center;
     width: 100%;
