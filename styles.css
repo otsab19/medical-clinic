@@ -43,18 +43,24 @@ body{
 
 .medical-list{
     margin: 10px;
-    border: 2px solid #a66ed9;
+    border: 2px solid #ad6962;
     border-radius: 10px;
+}
+.action-buttons{
+    padding-bottom: 10px;
+    border-bottom: 2px solid #a66ed9;
 }
 
 .action-buttons button{
     font-size: 1.6rem;
     font-weight: bold;
     height: 90px;
-    width: 120px;
+    width: 200px;
+    margin: 0 10px;
     background-color: #9ce57e;
     border-radius: 10px;
     color: aliceblue;
+    border: 2px solid #ddd;
 }
 .action-buttons .active{
     background-color: #3a9315;
@@ -145,4 +151,8 @@ body{
 .flex-column{
     display: flex;
     flex-direction: column;
+}
+.error-text{
+    color: #d23939;
+    padding-top: 10px;
 }

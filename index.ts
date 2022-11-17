@@ -13,7 +13,7 @@ interface IClinicData {
     dob: string;
     gender: Gender;
     primaryInsurance: TPrimaryInsurance;
-    contactNumber: string;
+    contactNumber: number;
     address: string;
     nextOfKin?: string;
 }
@@ -35,12 +35,25 @@ const initParams = () => {
 
 initParams();
 
+const onView = () => {
+    const elem = document.getElementById('form') as HTMLFormElement;
+    elem.style.display = 'none';
+
+    //show view element
+    const viewElem = document.getElementById('medical-list') as HTMLFormElement;
+    viewElem.style.display = 'block';
+};
+
 const onAdd = () => {
     const elem = document.getElementById('form') as HTMLFormElement;
     elem.style.display = 'block';
     clearMedicalList();
     toggleSearch(true);
     makeButtonActive('add');
+
+    //remove view element
+    const viewElem = document.getElementById('medical-list') as HTMLFormElement;
+    viewElem.style.display = 'none';
 };
 const renderData = (item:IClinicData) => {
     const list = document.getElementById('medical-list');
@@ -141,42 +154,69 @@ const renderMedicalList = (clinicData: IClinicData[]) => {
 };
 
 
-const renderError = (errors: string[]) => {
+const renderError = (errorKeys: string[], formData: IClinicData) => {
     const elem = document.getElementById('errors');
-    elem.append(`Please fix the errors: `);
-    errors.forEach((err) => {
-        const node = document.createElement("div");
-        node.className = 'error-list-item';
-        node.innerHTML = `<span>${err}</span>`;
-        elem.append(node);
+    elem.append(`Please fix the errors `);
+    const isIdInValid = checkIfPatientIdExist(formData);
+    errorKeys.forEach((k) => {
+        const elem = document.getElementById(k);
+        const errorElem = document.createElement('div');
+        errorElem.className = 'error-text';
+        if(k === 'patientId' && isIdInValid){
+            errorElem.innerHTML = 'ID is already used.';
+            elem.parentNode.insertBefore(errorElem, elem.nextSibling);
+            return;
+        }
+        if(k === 'dob' && formData[k]){
+            errorElem.innerHTML = 'Future Date is invalid.';
+            elem.parentNode.insertBefore(errorElem, elem.nextSibling);
+            return;
+        }
+        errorElem.innerHTML = textFromCamelCase(k) + ' is required.';
+        elem.parentNode.insertBefore(errorElem, elem.nextSibling);
     });
 };
-const clearErrors = () => {
+
+const clearErrors = (availableKeys: TKeysClinicData[] = keys) => {
     const elem = document.getElementById('errors');
     elem.innerHTML = null;
+
+    // clear input errors
+    availableKeys.forEach(k => {
+        const elem = document.getElementsByClassName('error-text');
+        while(elem [0]) {
+            elem[0].parentNode.removeChild(elem[0]);
+        }
+    });
 };
 
-const getInValidFormItems: (formData:IClinicData) => string[] = (formData) => {
-    const errors:string[] = [];
+const checkIfPatientIdExist: (formData: IClinicData) => boolean = (formData: IClinicData) => {
     const isIdInValid = clinicData.find(d => d.patientId === formData.patientId);
-    if(isIdInValid){
-        errors.push('Id is already used');
-    }
+    return !!isIdInValid;
+};
+
+const getInValidFormItems = (formData:IClinicData): TKeysClinicData[] => {
+    const errorKeys: TKeysClinicData[] = [];
     Object.keys(formData).forEach((key: TKeysClinicData) => {
+        //check for unique id
+        if(key === 'patientId' && checkIfPatientIdExist(formData)){
+            errorKeys.push(key);
+            return;
+        }
         // check for future date
         if(key === 'dob' && formData[key]){
             const today = new Date();
             today.setHours(0,0,0,0);
             if((new Date(formData[key])) > today){
-                errors.push('Future Date is invalid.')
+                errorKeys.push(key);
             }
             return;
         }
        if(!formData[key] && key !== 'nextOfKin'){
-           errors.push(textFromCamelCase(key) + ' is required');
+           errorKeys.push(key);
        }
     });
-    return errors;
+    return errorKeys;
 };
 renderMedicalList(clinicData);
 
@@ -202,23 +242,25 @@ const handleFormSubmit = (e) => {
     e.preventDefault();
     //cast to defined interface
     const formData = (Object.fromEntries(new FormData(e.target).entries())) as unknown as IClinicData;
-    const errors = getInValidFormItems(formData);
+    const errorKeys = getInValidFormItems(formData);
 
     //check if edit or add mode
     const isEditMode = params.editMode;
 
-    const idErrorIdx = errors.indexOf('Id is already used');
+    const idAlreadyExist = checkIfPatientIdExist(formData);
     // in edit mode no need to check unique patient id
-    if(idErrorIdx>=0 && isEditMode){
-        errors.splice(idErrorIdx, 1);
+    const idIdx = errorKeys.indexOf('patientId');
+    if(idAlreadyExist && isEditMode && idIdx>=0){
+        errorKeys.splice(idIdx, 1);
     }
-    if (!errors?.length) {
+
+    if (!errorKeys?.length) {
         clearErrors();
         isEditMode ? editClinicData(formData as unknown as IClinicData) : addClinicData(formData as unknown as IClinicData);
     } else {
         clearErrors();
         window.scrollTo(0,0);
-        renderError(errors);
+        renderError(errorKeys, formData);
     }
 };
 
@@ -253,13 +295,13 @@ const handleAction = (action: TAction) => {
             if(params.editMode){
                 hideFormButton('edit');
                 resetForm();
+                clearErrors();
                 initParams();
             }
             return;
 
         case "view":
-            elem = document.getElementById('form') as HTMLFormElement;
-            elem.style.display = 'none';
+            onView();
             renderMedicalList(clinicData);
             toggleSearch();
             makeButtonActive('view');
@@ -294,12 +336,13 @@ document.getElementById("search").onchange = (e) => {
 
 const init = () => {
 
+    //fill random data
     Array.from(Array(10).keys()).forEach((i) => {
-        const d = (`${Date.now()} ${i}`).slice(5);
+        const d = (`${Date.now()}${i}`).slice(5);
         addClinicData(
             {
                 address: `Address ${d}`,
-                contactNumber: `123456 ${i}`,
+                contactNumber: Number(`123456${i}`),
                 dob: '2021-01-01',
                 firstName: `First Name ${d}`,
                 gender: i % 2 === 0 ? Gender.MALE : Gender.FEMALE,
