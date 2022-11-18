@@ -1,11 +1,13 @@
 import {textFromCamelCase} from "./utils.js";
 
-enum Gender{
-    MALE='Male',FEMALE ='Female'
+enum Gender {
+    MALE = 'Male', FEMALE = 'Female'
 }
-type TAction = 'view' | 'add';
+
+type TAction = 'view' | 'add' | 'viewEmergency';
 
 type TPrimaryInsurance = "Medicare" | "Private Health Insurance";
+
 interface IClinicData {
     patientId: string;
     firstName: string;
@@ -16,13 +18,14 @@ interface IClinicData {
     contactNumber: number;
     address: string;
     nextOfKin?: string;
+    emergency?: boolean;
 }
 
 type TKeysClinicData = keyof IClinicData;
 
 const keys: TKeysClinicData[] = ['patientId', 'firstName', 'lastName', 'dob', 'gender', 'primaryInsurance', 'contactNumber', 'address', 'nextOfKin'];
 
-let params: {editIndex: number; editMode: boolean};
+let params: { editIndex: number; editMode: boolean };
 
 const clinicData: IClinicData[] = [];
 
@@ -55,13 +58,30 @@ const onAdd = () => {
     const viewElem = document.getElementById('medical-list') as HTMLFormElement;
     viewElem.style.display = 'none';
 };
-const renderData = (item:IClinicData) => {
+
+const showFormTitle = (id: 'add' | 'edit') => {
+    const elem = document.getElementById(`${id}Title`);
+    const inactiveElem = document.getElementById(id === 'add' ? 'editTitle' : 'addTitle');
+    elem.style.display =  'flex';
+    inactiveElem.style.display = 'none'
+};
+
+const togglePatientIdFieldDisabled = (type: boolean) => {
+    // Make patient id field inactive
+    const patientElem = document.getElementById('patientId') as HTMLInputElement;
+    if (type) patientElem.disabled = type;
+    else patientElem.removeAttribute('disabled');
+};
+
+const renderData = (item: IClinicData, onlyEmergency:boolean = false) => {
     const list = document.getElementById('medical-list');
     const node = document.createElement("div");
     node.className = 'list-item';
+
+    // Delete
     const deleteElem = document.createElement("button");
     deleteElem.onclick = () => {
-        if(confirm("Are you sure you want to delete the record?")){
+        if (confirm("Are you sure you want to delete the record?")) {
             const index = clinicData.findIndex(d => d.patientId === item.patientId);
             clinicData.splice(index, 1);
             handleAction('view');
@@ -69,12 +89,15 @@ const renderData = (item:IClinicData) => {
     };
     deleteElem.innerHTML = 'Delete';
     deleteElem.className = 'deleteButton';
+
+    //EDIT
     const editElem = document.createElement("button");
     editElem.innerHTML = 'Edit';
     editElem.className = 'editButton'
     editElem.onclick = () => {
         onAdd();
         makeButtonActive('add', true);
+        showFormTitle('edit');
         // fill with edited row data
         const currDataIndex = clinicData.findIndex(d => d.patientId === item.patientId);
         keys.forEach((k) => {
@@ -88,7 +111,22 @@ const renderData = (item:IClinicData) => {
         addElem.style.display = 'none';
         params.editMode = true;
         params.editIndex = currDataIndex;
+        togglePatientIdFieldDisabled(true);
     };
+
+    // MArk as EMERGENCY
+    const emergencyRoot = document.createElement("div");
+    emergencyRoot.className = 'emergencyWrapper';
+    emergencyRoot.innerHTML = 'Emergency';
+    const emergencyElem = document.createElement("input");
+    emergencyElem.id = 'markEmergency';
+    emergencyElem.type = 'checkbox';
+    emergencyElem.checked = item.emergency;
+    emergencyElem.onchange = (e) => {
+        item.emergency = (e.target as HTMLInputElement).checked;
+    };
+    emergencyRoot.append(emergencyElem);
+
     const group1 = document.createElement("div");
     group1.className = 'flex';
     group1.innerHTML = `
@@ -118,6 +156,7 @@ const renderData = (item:IClinicData) => {
     group.append(group2);
     group.append(group3);
 
+    if(!onlyEmergency) node.append(emergencyRoot);
     node.append(group);
 
     const linkNode = document.createElement('div');
@@ -132,7 +171,7 @@ const renderData = (item:IClinicData) => {
 // no data
 const toggleNoDataRender = (show: boolean) => {
     const elem = document.getElementById('noData');
-    elem.innerHTML = show? 'No Data' : '';
+    elem.innerHTML = show ? 'No Data' : '';
 };
 
 // Clear html list from DOM
@@ -141,16 +180,21 @@ const clearMedicalList = () => {
     list.innerHTML = null;
 };
 
-const renderMedicalList = (clinicData: IClinicData[]) => {
+const renderMedicalList = (clinicData: IClinicData[], onlyEmergency: boolean = false) => {
     clearMedicalList();
-    if(!clinicData?.length){
+    let toRenderData;
+    toRenderData = onlyEmergency ? clinicData.filter(d => d.emergency) : clinicData;
+    if (!toRenderData?.length) {
         toggleNoDataRender(true);
+        // hide medical-list from DOM
+        const viewElem = document.getElementById('medical-list') as HTMLFormElement;
+        viewElem.style.display = 'none';
         return;
     }
     toggleNoDataRender(false);
-    clinicData.forEach((d) => {
-        renderData(d);
-    })
+    toRenderData.forEach((d) => {
+        renderData(d, onlyEmergency);
+    });
 };
 
 
@@ -162,12 +206,12 @@ const renderError = (errorKeys: string[], formData: IClinicData) => {
         const elem = document.getElementById(k);
         const errorElem = document.createElement('div');
         errorElem.className = 'error-text';
-        if(k === 'patientId' && isIdInValid){
+        if (k === 'patientId' && isIdInValid) {
             errorElem.innerHTML = 'ID is already used.';
             elem.parentNode.insertBefore(errorElem, elem.nextSibling);
             return;
         }
-        if(k === 'dob' && formData[k]){
+        if (k === 'dob' && formData[k]) {
             errorElem.innerHTML = 'Future Date is invalid.';
             elem.parentNode.insertBefore(errorElem, elem.nextSibling);
             return;
@@ -184,7 +228,7 @@ const clearErrors = (availableKeys: TKeysClinicData[] = keys) => {
     // clear input errors
     availableKeys.forEach(k => {
         const elem = document.getElementsByClassName('error-text');
-        while(elem [0]) {
+        while (elem [0]) {
             elem[0].parentNode.removeChild(elem[0]);
         }
     });
@@ -195,26 +239,26 @@ const checkIfPatientIdExist: (formData: IClinicData) => boolean = (formData: ICl
     return !!isIdInValid;
 };
 
-const getInValidFormItems = (formData:IClinicData): TKeysClinicData[] => {
+const getInValidFormItems = (formData: IClinicData): TKeysClinicData[] => {
     const errorKeys: TKeysClinicData[] = [];
     Object.keys(formData).forEach((key: TKeysClinicData) => {
         //check for unique id
-        if(key === 'patientId' && checkIfPatientIdExist(formData)){
+        if (key === 'patientId' && checkIfPatientIdExist(formData)) {
             errorKeys.push(key);
             return;
         }
         // check for future date
-        if(key === 'dob' && formData[key]){
+        if (key === 'dob' && formData[key]) {
             const today = new Date();
-            today.setHours(0,0,0,0);
-            if((new Date(formData[key])) > today){
+            today.setHours(0, 0, 0, 0);
+            if ((new Date(formData[key])) > today) {
                 errorKeys.push(key);
             }
             return;
         }
-       if(!formData[key] && key !== 'nextOfKin'){
-           errorKeys.push(key);
-       }
+        if (!formData[key] && key !== 'nextOfKin') {
+            errorKeys.push(key);
+        }
     });
     return errorKeys;
 };
@@ -226,7 +270,7 @@ const resetForm = () => {
     elem.reset();
 };
 /* Add data from form */
-const addClinicData = (data: IClinicData):void => {
+const addClinicData = (data: IClinicData): void => {
     clinicData.push(data);
     resetForm();
     handleAction('view');
@@ -250,7 +294,7 @@ const handleFormSubmit = (e) => {
     const idAlreadyExist = checkIfPatientIdExist(formData);
     // in edit mode no need to check unique patient id
     const idIdx = errorKeys.indexOf('patientId');
-    if(idAlreadyExist && isEditMode && idIdx>=0){
+    if (idAlreadyExist && isEditMode && idIdx >= 0) {
         errorKeys.splice(idIdx, 1);
     }
 
@@ -259,7 +303,7 @@ const handleFormSubmit = (e) => {
         isEditMode ? editClinicData(formData as unknown as IClinicData) : addClinicData(formData as unknown as IClinicData);
     } else {
         clearErrors();
-        window.scrollTo(0,0);
+        window.scrollTo(0, 0);
         renderError(errorKeys, formData);
     }
 };
@@ -278,26 +322,36 @@ const hideFormButton = (type: 'add' | 'edit') => {
     counterElem.style.display = 'block';
 };
 
-const makeButtonActive = (buttonId:'add' | 'view', bothInactive?:boolean) => {
-    const activeElem = document.getElementById(`${buttonId}Button`) as HTMLFormElement;
-    const inactiveElem = document.getElementById(buttonId === 'add' ? 'viewButton' : 'addButton') as HTMLFormElement;
-    activeElem.className = bothInactive ? '' : 'active';
-    inactiveElem.className = '';
+const makeButtonActive = (buttonId: 'add' | 'view' | 'viewEmergency', bothInactive?: boolean) => {
+    const buttons = ['add', 'view', 'viewEmergency'];
+    buttons.forEach(button => {
+        setTimeout(() => {
+            const elem = document.getElementById(`${button}Button`) as HTMLButtonElement;
+            if (buttonId === button) {
+                elem.className = bothInactive ? '' : 'active';
+                return;
+            }
+            else {
+                elem.className = '';
+            }
+        }, 100);
+    });
 };
 
 
 /* Handle crud action*/
 const handleAction = (action: TAction) => {
-    let elem;
-    switch (action){
+    switch (action) {
         case 'add':
             onAdd();
-            if(params.editMode){
+            if (params.editMode) {
                 hideFormButton('edit');
                 resetForm();
                 clearErrors();
                 initParams();
             }
+            togglePatientIdFieldDisabled(false);
+            showFormTitle('add');
             return;
 
         case "view":
@@ -308,12 +362,22 @@ const handleAction = (action: TAction) => {
             initParams();
             clearErrors();
             return;
+
+        case "viewEmergency":
+            onView();
+            renderMedicalList(clinicData, true);
+            toggleSearch();
+            makeButtonActive('viewEmergency');
+            initParams();
+            clearErrors();
+            toggleSearch(true);
+            return;
     }
 }
 const handleSearch = (e: Event) => {
     const searchText = (e.target as HTMLInputElement).value || '';
     const filteredList = clinicData.filter(d => {
-       return d?.patientId?.includes(searchText.toLowerCase());
+        return d?.patientId?.includes(searchText.toLowerCase());
     });
     renderMedicalList(filteredList);
 };
@@ -328,6 +392,10 @@ document.getElementById("addButton").onclick = () => {
 };
 document.getElementById("viewButton").onclick = () => {
     handleAction('view');
+};
+
+document.getElementById("viewEmergencyButton").onclick = () => {
+    handleAction('viewEmergency');
 };
 //search
 document.getElementById("search").onchange = (e) => {
@@ -348,7 +416,7 @@ const init = () => {
                 gender: i % 2 === 0 ? Gender.MALE : Gender.FEMALE,
                 lastName: `Last Name ${d}`,
                 patientId: `${d}`,
-                primaryInsurance: i%2 === 0 ? 'Medicare' : 'Private Health Insurance'
+                primaryInsurance: i % 2 === 0 ? 'Medicare' : 'Private Health Insurance'
             }
         )
     });

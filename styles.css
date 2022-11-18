@@ -49,14 +49,21 @@ body{
 .action-buttons{
     padding-bottom: 10px;
     border-bottom: 2px solid #a66ed9;
+    display: flex;
+    align-items: center;
 }
 
+@media only screen and (max-width: 700px){
+    .action-buttons{
+        flex-direction: column;
+    }
+}
 .action-buttons button{
     font-size: 1.6rem;
     font-weight: bold;
-    height: 90px;
-    width: 200px;
-    margin: 0 10px;
+    height: 60px;
+    width: 400px;
+    margin: 10px 10px;
     background-color: #9ce57e;
     border-radius: 10px;
     color: aliceblue;
@@ -92,6 +99,7 @@ body{
     padding: 10px;
     display: flex;
     justify-content: center;
+    align-items: baseline;
 }
 .list-item span{
     padding: 10px;
@@ -155,4 +163,11 @@ body{
 .error-text{
     color: #d23939;
     padding-top: 10px;
+}
+.title{
+    font-size: 1.8rem;
+    margin: 10px 0;
+    display: flex;
+    justify-content: center;
+    font-weight: bold;
 }

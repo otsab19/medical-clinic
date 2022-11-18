@@ -11,9 +11,11 @@
 </style>
 
 <body>
+<div class="title">MEDICAL CLINIC</div>
 <div class="action-buttons">
-    <button type="button" id="addButton">Add</button>
-    <button type="button" id="viewButton">View</button>
+    <button type="button" id="addButton">Add Patients</button>
+    <button type="button" id="viewButton">View Patients</button>
+    <button type="button" id="viewEmergencyButton">View Emergency Patients</button>
 </div>
 <div class="search-wrapper">
     <input type="text" id="search" name="search" placeholder="Search by ID"/>
@@ -22,8 +24,9 @@
 <div id="noData"></div>
 <div id="errors"></div>
 <div class="form-wrapper">
-
     <form id="form">
+        <span class="title" id="addTitle">Adding Patient</span>
+        <span class="title" id="editTitle">Editing Patient</span>
         <div>
             <label for="patientId">Patient ID*</label><input type="text" id="patientId" name="patientId">
         </div>
