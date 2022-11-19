@@ -1,29 +1,13 @@
 import {textFromCamelCase} from "./utils.js";
-
-enum Gender {
-    MALE = 'Male', FEMALE = 'Female'
-}
-
-type TAction = 'view' | 'add' | 'viewEmergency';
-
-type TPrimaryInsurance = "Medicare" | "Private Health Insurance";
-
-interface IClinicData {
-    patientId: string;
-    firstName: string;
-    lastName: string;
-    dob: string;
-    gender: Gender;
-    primaryInsurance: TPrimaryInsurance;
-    contactNumber: number;
-    address: string;
-    nextOfKin?: string;
-    emergency?: boolean;
-}
-
-type TKeysClinicData = keyof IClinicData;
-
-const keys: TKeysClinicData[] = ['patientId', 'firstName', 'lastName', 'dob', 'gender', 'primaryInsurance', 'contactNumber', 'address', 'nextOfKin'];
+import {Gender, IClinicData, keys, TAction, TKeysClinicData} from "./types.js";
+import {
+    clearErrors,
+    clearMedicalList, hideFormButton,
+    makeButtonActive, showFormTitle,
+    toggleNoDataRender,
+    togglePatientIdFieldDisabled,
+    toggleSearch
+} from "./dom.js";
 
 let params: { editIndex: number; editMode: boolean };
 
@@ -57,20 +41,6 @@ const onAdd = () => {
     //remove view element
     const viewElem = document.getElementById('medical-list') as HTMLFormElement;
     viewElem.style.display = 'none';
-};
-
-const showFormTitle = (id: 'add' | 'edit') => {
-    const elem = document.getElementById(`${id}Title`);
-    const inactiveElem = document.getElementById(id === 'add' ? 'editTitle' : 'addTitle');
-    elem.style.display =  'flex';
-    inactiveElem.style.display = 'none'
-};
-
-const togglePatientIdFieldDisabled = (type: boolean) => {
-    // Make patient id field inactive
-    const patientElem = document.getElementById('patientId') as HTMLInputElement;
-    if (type) patientElem.disabled = type;
-    else patientElem.removeAttribute('disabled');
 };
 
 const renderData = (item: IClinicData, onlyEmergency:boolean = false) => {
@@ -168,17 +138,6 @@ const renderData = (item: IClinicData, onlyEmergency:boolean = false) => {
 
     list.append(node);
 };
-// no data
-const toggleNoDataRender = (show: boolean) => {
-    const elem = document.getElementById('noData');
-    elem.innerHTML = show ? 'No Data' : '';
-};
-
-// Clear html list from DOM
-const clearMedicalList = () => {
-    const list = document.getElementById('medical-list');
-    list.innerHTML = null;
-};
 
 const renderMedicalList = (clinicData: IClinicData[], onlyEmergency: boolean = false) => {
     clearMedicalList();
@@ -221,18 +180,6 @@ const renderError = (errorKeys: string[], formData: IClinicData) => {
     });
 };
 
-const clearErrors = (availableKeys: TKeysClinicData[] = keys) => {
-    const elem = document.getElementById('errors');
-    elem.innerHTML = null;
-
-    // clear input errors
-    availableKeys.forEach(k => {
-        const elem = document.getElementsByClassName('error-text');
-        while (elem [0]) {
-            elem[0].parentNode.removeChild(elem[0]);
-        }
-    });
-};
 
 const checkIfPatientIdExist: (formData: IClinicData) => boolean = (formData: IClinicData) => {
     const isIdInValid = clinicData.find(d => d.patientId === formData.patientId);
@@ -309,34 +256,6 @@ const handleFormSubmit = (e) => {
 };
 
 
-const toggleSearch = (toggle: Boolean = false) => {
-    //hide search as well
-    const elemSearch = document.getElementById('search');
-    elemSearch.style.display = toggle ? 'none' : 'block';
-};
-
-const hideFormButton = (type: 'add' | 'edit') => {
-    const elem = document.getElementById(type + 'Btn');
-    const counterElem = document.getElementById((type === 'add' ? 'edit' : 'add') + 'Btn');
-    elem.style.display = 'none';
-    counterElem.style.display = 'block';
-};
-
-const makeButtonActive = (buttonId: 'add' | 'view' | 'viewEmergency', bothInactive?: boolean) => {
-    const buttons = ['add', 'view', 'viewEmergency'];
-    buttons.forEach(button => {
-        setTimeout(() => {
-            const elem = document.getElementById(`${button}Button`) as HTMLButtonElement;
-            if (buttonId === button) {
-                elem.className = bothInactive ? '' : 'active';
-                return;
-            }
-            else {
-                elem.className = '';
-            }
-        }, 100);
-    });
-};
 
 
 /* Handle crud action*/
