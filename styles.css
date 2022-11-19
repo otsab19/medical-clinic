@@ -1,5 +1,6 @@
 body{
-    padding: 10px;
+    padding: 0px;
+    margin:0;
     background-color: #281e1e;
     color: #ddd;
 }
@@ -46,31 +47,40 @@ body{
     border: 2px solid #ad6962;
     border-radius: 10px;
 }
-.action-buttons{
-    padding-bottom: 10px;
-    border-bottom: 2px solid #a66ed9;
-    display: flex;
-    align-items: center;
-}
 
-@media only screen and (max-width: 700px){
-    .action-buttons{
-        flex-direction: column;
+@media only screen and (max-width: 600px){
+    body{
+        overflow: auto !important;
     }
+    .action-buttons{
+        align-items: center;
+        justify-content: center;
+    }
+    #search{
+        width: auto !important;
+    }
+}
+.action-buttons{
+    border-bottom: 2px solid #a66ed9;
+    background-color: #0c1c05;
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
 }
 .action-buttons button{
     font-size: 1.6rem;
     font-weight: bold;
     height: 60px;
-    width: 400px;
-    margin: 10px 10px;
-    background-color: #9ce57e;
+    min-width: 200px;
+    background-color: #091803;
     border-radius: 10px;
     color: aliceblue;
-    border: 2px solid #ddd;
+    margin: 10px 10px;
+    border: 2px solid #091803;
 }
 .action-buttons .active{
     background-color: #3a9315;
+    color: #281e1e;
 }
 .action-buttons button:hover, .action-buttons button:focus{
     background-color: #3a9315;
@@ -98,6 +108,7 @@ body{
     border-radius: 10px;
     padding: 10px;
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: baseline;
 }

@@ -350,6 +350,7 @@ const handleAction = (action: TAction) => {
                 clearErrors();
                 initParams();
             }
+            toggleNoDataRender(false);
             togglePatientIdFieldDisabled(false);
             showFormTitle('add');
             return;
